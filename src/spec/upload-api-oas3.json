@@ -1,0 +1,95 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Project-Xavier-Upload",
+    "description": "An API to upload analysis to Red Hat Insights",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "name": "Red Hat Migration Analytics Team"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "ok doqui"
+          }
+        }
+      }
+    },
+    "/analysis/upload": {
+      "post": {
+        "parameters": [
+          {
+            "name": "customerid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filename",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "numberofhosts",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "totaldiskspace",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {}
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Analysis file successfully uploaded."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

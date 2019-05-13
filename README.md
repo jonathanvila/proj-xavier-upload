@@ -52,13 +52,19 @@ Now when you use "Add to Project" button in the OpenShift console, you should se
 1. Using Red Hat CodeReady Studio -> New Fuse Integration Project
 1. Installing OKD
    1. https://github.com/openshift/origin/blob/v3.11.0/docs/cluster_up_down.md#linux
+1. oc cluster up
+   1. if running issues with a "hung" instance :
+       1. oc cluster down
+       1. for i in $(mount | grep openshift | awk '{ print $3}'); do sudo umount "$i"; done && sudo rm -rf ./openshift.local.clusterup
 1. OKD Setup for Fuse 
    1. https://docs.openshift.com/container-platform/3.11/dev_guide/managing_images.html#using-image-pull-secrets
    1. Add secret to connect to Redhat registry
-      1. oc create secret docker-registry {name} --docker-server=https://registry.redhat.io --docker-username={redhat email} --docker-password={pass} --docker-email={redhat email} --namespace=openshift
+       1. oc login -u system:admin
+       1. oc create secret docker-registry {name} --docker-server=https://registry.redhat.io --docker-username={redhat email} --docker-password={pass} --docker-email={redhat email} --namespace=openshift
    1. Import Fuse image streams
-      1. download https://github.com/jboss-fuse/application-templates/blob/master/fis-image-streams.json
-      1. oc create -f fis-image-streams.json -n openshift
+      1. oc create -f https://raw.githubusercontent.com/jboss-fuse/application-templates/master/fis-image-streams.json -n openshift
+   1. Import Fuse Console image stream
+      1. oc create -n openshift -f https://raw.githubusercontent.com/jboss-fuse/application-templates/application-templates-2.1.fuse-730065-redhat-00002/fis-console-namespace-template.json
 1. Login to OKD
    1. oc login https://127.0.01:8443 -u developer
    1. oc project myproject 

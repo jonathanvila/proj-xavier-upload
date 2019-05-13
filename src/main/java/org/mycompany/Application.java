@@ -17,13 +17,13 @@ package org.mycompany;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * A spring-boot application that includes a Camel route builder to setup the Camel routes
  */
 @SpringBootApplication
-@ImportResource({"classpath:spring/camel-context.xml"})
+@Configuration
 public class Application {
 
     // must have a main method spring-boot can run

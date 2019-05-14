@@ -1,5 +1,5 @@
 
-package org.mycompany.cloudforms;
+package org.mycompany.model.cloudforms;
 
 import com.fasterxml.jackson.annotation.*;
 

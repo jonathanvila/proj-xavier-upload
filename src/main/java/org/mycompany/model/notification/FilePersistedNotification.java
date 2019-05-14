@@ -1,4 +1,4 @@
-package org.mycompany;
+package org.mycompany.model.notification;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

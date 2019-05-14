@@ -1,6 +1,6 @@
 package org.mycompany.dataformat;
 
-import me.jvilalop.model.InputDataModel;
+import org.mycompany.model.InputDataModel;
 import org.apache.camel.Exchange;
 import org.apache.camel.spi.DataFormat;
 

@@ -76,11 +76,11 @@ public class MainRouteBuilder extends RouteBuilder {
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .setHeader("x-rh-identity", constant(getRHIdentity()))
                 .setHeader("x-rh-insights-request-id", constant(getRHInsightsRequestId()))
-                .to("http4://localhost:8080/api/ingress/v1/upload")
+                .to("http4://${sysenv.insightsuploadhost}/api/ingress/v1/upload")
         .log("answer ${body}")
         .end();
         
-        from("kafka:kafka:29092?topic=platform.upload.testareno&autoOffsetReset=earliest&consumersCount=1&brokers=kafka:29092")
+        from("kafka:${sysenv.kafkahost}?topic=platform.upload.testareno&autoOffsetReset=earliest&consumersCount=1&brokers=${sysenv.kafkahost}")
                 .process(exchange -> {
                     String messageKey = "";
                     if (exchange.getIn() != null) {
@@ -127,7 +127,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 })
                 .log("Before second unmarshal : ${body}")
                 .process(exchange -> exchange.getMessage().setBody(InputDataModel.builder().customerId("CID9876") //exchange.getMessage().getHeader("customerid").toString())
-                                                                    .filename(simple("${header.CamelFileName}").getText())
+                                                                    .filename(exchange.getMessage().getHeader("CamelFileName").toString())
                                                                     .numberOfHosts(Long.parseLong(exchange.getMessage().getHeader("numberofhosts").toString()))
                                                                     .totalDiskSpace(Long.parseLong(exchange.getMessage().getHeader("totaldiskspace").toString()))
                                                                     .build()))

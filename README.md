@@ -66,7 +66,7 @@ Now when you use "Add to Project" button in the OpenShift console, you should se
    1. Import Fuse Console image stream
       1. oc create -n openshift -f https://raw.githubusercontent.com/jboss-fuse/application-templates/application-templates-2.1.fuse-730065-redhat-00002/fis-console-namespace-template.json
 1. Login to OKD
-   1. oc login https://127.0.01:8443 -u developer
+   1. oc login https://127.0.0.1:8443 -u developer
    1. oc project myproject 
 1. Deploy
    1. mvn fabric8:deploy

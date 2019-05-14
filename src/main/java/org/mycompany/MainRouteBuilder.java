@@ -1,20 +1,20 @@
 package org.mycompany;
 
-import org.apache.camel.component.kafka.KafkaConstants;
-import org.mycompany.dataformat.CustomizedMultipartDataFormat;
-import org.mycompany.dataformat.ReportModelDataFormat;
-import org.mycompany.model.RHIdentity;
 import org.apache.camel.*;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.kafka.KafkaConstants;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.mycompany.dataformat.CustomizedMultipartDataFormat;
+import org.mycompany.model.InputDataModel;
+import org.mycompany.model.RHIdentity;
+import org.mycompany.model.cloudforms.CloudFormAnalysis;
 import org.mycompany.model.notification.FilePersistedNotification;
 import org.springframework.stereotype.Component;
-import org.mycompany.model.cloudforms.CloudFormAnalysis;
 
 import javax.activation.DataHandler;
 import java.util.UUID;
@@ -106,7 +106,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .setBody(constant(""))
                 .recipientList(simple("${header.remote_url}"))
                 .convertBodyTo(String.class)
-                .log("Content : ${body}")
+                .log("Contenido : ${body}")
                 .to("direct:parse");
         
         from("direct:parse")
@@ -122,11 +122,17 @@ public class MainRouteBuilder extends RouteBuilder {
                             .flatMap(e-> e.getDatastores().stream())
                             .mapToLong(t -> t.getTotalSpace())
                             .sum();
-                    exchange.getMessage().setHeader("numberofhosts", simple(String.valueOf(numberofhosts)));
-                    exchange.getMessage().setHeader("totalspace", simple(String.valueOf(totalspace)));
+                    exchange.getMessage().setHeader("numberofhosts",String.valueOf(numberofhosts));
+                    exchange.getMessage().setHeader("totaldiskspace", String.valueOf(totalspace));
                 })
-                .unmarshal(new ReportModelDataFormat())
-                .unmarshal().json()
+                .log("Before second unmarshal : ${body}")
+                .process(exchange -> exchange.getMessage().setBody(InputDataModel.builder().customerId("CID9876") //exchange.getMessage().getHeader("customerid").toString())
+                                                                    .filename(simple("${header.CamelFileName}").getText())
+                                                                    .numberOfHosts(Long.parseLong(exchange.getMessage().getHeader("numberofhosts").toString()))
+                                                                    .totalDiskSpace(Long.parseLong(exchange.getMessage().getHeader("totaldiskspace").toString()))
+                                                                    .build()))
+                .log("Before third unmarshal : ${body}")
+                .marshal().json()
                 .to("mock:amq_endpoint");
     }
 

@@ -34,19 +34,19 @@ public class Host {
     @JsonProperty("vmm_buildnumber")
     private String vmmBuildnumber;
     @JsonProperty("num_cpu")
-    private Integer numCpu;
+    private Long numCpu;
     @JsonProperty("cpu_total_cores")
-    private Integer cpuTotalCores;
+    private Long cpuTotalCores;
     @JsonProperty("cpu_cores_per_socket")
-    private Integer cpuCoresPerSocket;
+    private Long cpuCoresPerSocket;
     @JsonProperty("hyperthreading")
     private Boolean hyperthreading;
     @JsonProperty("ram_size")
-    private Integer ramSize;
+    private Long ramSize;
     @JsonProperty("v_total_vms")
-    private Integer vTotalVms;
+    private Long vTotalVms;
     @JsonProperty("v_total_miq_templates")
-    private Integer vTotalMiqTemplates;
+    private Long vTotalMiqTemplates;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -101,32 +101,32 @@ public class Host {
     }
 
     @JsonProperty("num_cpu")
-    public Integer getNumCpu() {
+    public Long getNumCpu() {
         return numCpu;
     }
 
     @JsonProperty("num_cpu")
-    public void setNumCpu(Integer numCpu) {
+    public void setNumCpu(Long numCpu) {
         this.numCpu = numCpu;
     }
 
     @JsonProperty("cpu_total_cores")
-    public Integer getCpuTotalCores() {
+    public Long getCpuTotalCores() {
         return cpuTotalCores;
     }
 
     @JsonProperty("cpu_total_cores")
-    public void setCpuTotalCores(Integer cpuTotalCores) {
+    public void setCpuTotalCores(Long cpuTotalCores) {
         this.cpuTotalCores = cpuTotalCores;
     }
 
     @JsonProperty("cpu_cores_per_socket")
-    public Integer getCpuCoresPerSocket() {
+    public Long getCpuCoresPerSocket() {
         return cpuCoresPerSocket;
     }
 
     @JsonProperty("cpu_cores_per_socket")
-    public void setCpuCoresPerSocket(Integer cpuCoresPerSocket) {
+    public void setCpuCoresPerSocket(Long cpuCoresPerSocket) {
         this.cpuCoresPerSocket = cpuCoresPerSocket;
     }
 
@@ -141,32 +141,32 @@ public class Host {
     }
 
     @JsonProperty("ram_size")
-    public Integer getRamSize() {
+    public Long getRamSize() {
         return ramSize;
     }
 
     @JsonProperty("ram_size")
-    public void setRamSize(Integer ramSize) {
+    public void setRamSize(Long ramSize) {
         this.ramSize = ramSize;
     }
 
     @JsonProperty("v_total_vms")
-    public Integer getVTotalVms() {
+    public Long getVTotalVms() {
         return vTotalVms;
     }
 
     @JsonProperty("v_total_vms")
-    public void setVTotalVms(Integer vTotalVms) {
+    public void setVTotalVms(Long vTotalVms) {
         this.vTotalVms = vTotalVms;
     }
 
     @JsonProperty("v_total_miq_templates")
-    public Integer getVTotalMiqTemplates() {
+    public Long getVTotalMiqTemplates() {
         return vTotalMiqTemplates;
     }
 
     @JsonProperty("v_total_miq_templates")
-    public void setVTotalMiqTemplates(Integer vTotalMiqTemplates) {
+    public void setVTotalMiqTemplates(Long vTotalMiqTemplates) {
         this.vTotalMiqTemplates = vTotalMiqTemplates;
     }
 

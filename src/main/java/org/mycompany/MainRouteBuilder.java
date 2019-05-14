@@ -105,7 +105,8 @@ public class MainRouteBuilder extends RouteBuilder {
                 .setHeader("remote_url", simple("http4://${body.url.replaceAll('http://', '')}"))
                 .setBody(constant(""))
                 .recipientList(simple("${header.remote_url}"))
-                .log("Contenido : ${body}")
+                .convertBodyTo(String.class)
+                .log("Content : ${body}")
                 .to("direct:parse");
         
         from("direct:parse")

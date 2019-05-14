@@ -35,15 +35,15 @@ public class Datastore {
     @JsonProperty("directory_hierarchy_supported")
     private Boolean directoryHierarchySupported;
     @JsonProperty("multiplehostaccess")
-    private Integer multiplehostaccess;
+    private Long multiplehostaccess;
     @JsonProperty("total_space")
-    private Integer totalSpace;
+    private Long totalSpace;
     @JsonProperty("uncommitted")
-    private Integer uncommitted;
+    private Long uncommitted;
     @JsonProperty("free_space")
-    private Integer freeSpace;
+    private Long freeSpace;
     @JsonProperty("v_total_vms")
-    private Integer vTotalVms;
+    private Long vTotalVms;
     @JsonProperty("hosts")
     private List<String> hosts = null;
     @JsonProperty("storage_profiles")
@@ -102,52 +102,52 @@ public class Datastore {
     }
 
     @JsonProperty("multiplehostaccess")
-    public Integer getMultiplehostaccess() {
+    public Long getMultiplehostaccess() {
         return multiplehostaccess;
     }
 
     @JsonProperty("multiplehostaccess")
-    public void setMultiplehostaccess(Integer multiplehostaccess) {
+    public void setMultiplehostaccess(Long multiplehostaccess) {
         this.multiplehostaccess = multiplehostaccess;
     }
 
     @JsonProperty("total_space")
-    public Integer getTotalSpace() {
+    public Long getTotalSpace() {
         return totalSpace;
     }
 
     @JsonProperty("total_space")
-    public void setTotalSpace(Integer totalSpace) {
+    public void setTotalSpace(Long totalSpace) {
         this.totalSpace = totalSpace;
     }
 
     @JsonProperty("uncommitted")
-    public Integer getUncommitted() {
+    public Long getUncommitted() {
         return uncommitted;
     }
 
     @JsonProperty("uncommitted")
-    public void setUncommitted(Integer uncommitted) {
+    public void setUncommitted(Long uncommitted) {
         this.uncommitted = uncommitted;
     }
 
     @JsonProperty("free_space")
-    public Integer getFreeSpace() {
+    public Long getFreeSpace() {
         return freeSpace;
     }
 
     @JsonProperty("free_space")
-    public void setFreeSpace(Integer freeSpace) {
+    public void setFreeSpace(Long freeSpace) {
         this.freeSpace = freeSpace;
     }
 
     @JsonProperty("v_total_vms")
-    public Integer getVTotalVms() {
+    public Long getVTotalVms() {
         return vTotalVms;
     }
 
     @JsonProperty("v_total_vms")
-    public void setVTotalVms(Integer vTotalVms) {
+    public void setVTotalVms(Long vTotalVms) {
         this.vTotalVms = vTotalVms;
     }
 

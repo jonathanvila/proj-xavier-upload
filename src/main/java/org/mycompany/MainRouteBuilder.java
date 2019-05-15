@@ -1,5 +1,7 @@
 package org.mycompany;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.*;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.kafka.KafkaConstants;
@@ -17,6 +19,9 @@ import org.mycompany.model.notification.FilePersistedNotification;
 import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -34,7 +39,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .port(8090);
 
         rest()
-                .post("/upload")
+                .post("/upload/{customerid}")
                     .id("uploadAction")
                     .consumes("multipart/form-data")
                     .produces("")
@@ -76,11 +81,12 @@ public class MainRouteBuilder extends RouteBuilder {
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .setHeader("x-rh-identity", constant(getRHIdentity()))
                 .setHeader("x-rh-insights-request-id", constant(getRHInsightsRequestId()))
-                .to("http4://${sysenv.insightsuploadhost}/api/ingress/v1/upload")
+                .recipientList(simple("http4://${sysenv.insightsuploadhost}/api/ingress/v1/upload"))
         .log("answer ${body}")
         .end();
         
-        from("kafka:${sysenv.kafkahost}?topic=platform.upload.testareno&autoOffsetReset=earliest&consumersCount=1&brokers=${sysenv.kafkahost}")
+        from("direct:kafka")
+                .recipientList(simple("kafka:${sysenv.kafkahost}?topic=platform.upload.testareno&autoOffsetReset=earliest&consumersCount=1&brokers=${sysenv.kafkahost}"))
                 .process(exchange -> {
                     String messageKey = "";
                     if (exchange.getIn() != null) {
@@ -106,7 +112,10 @@ public class MainRouteBuilder extends RouteBuilder {
                 .setBody(constant(""))
                 .recipientList(simple("${header.remote_url}"))
                 .convertBodyTo(String.class)
-                .log("Contenido : ${body}")
+                .log("Content : ${body}")
+                .process(exchange -> {
+                    
+                })
                 .to("direct:parse");
         
         from("direct:parse")
@@ -127,7 +136,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 })
                 .log("Before second unmarshal : ${body}")
                 .process(exchange -> exchange.getMessage().setBody(InputDataModel.builder().customerId("CID9876") //exchange.getMessage().getHeader("customerid").toString())
-                                                                    .filename(exchange.getMessage().getHeader("CamelFileName").toString())
+                                                                    .filename("file-name.json") //exchange.getMessage().getHeader("CamelFileName").toString())
                                                                     .numberOfHosts(Long.parseLong(exchange.getMessage().getHeader("numberofhosts").toString()))
                                                                     .totalDiskSpace(Long.parseLong(exchange.getMessage().getHeader("totaldiskspace").toString()))
                                                                     .build()))
@@ -143,10 +152,20 @@ public class MainRouteBuilder extends RouteBuilder {
 
     private String getRHIdentity() {
         // '{"identity": {"account_number": "12345", "internal": {"org_id": "54321"}}}'
-        return RHIdentity.builder()
-                .accountNumber("12345")
-                .internalOrgId("54321")
-                .build().toHash();
+        Map<String,String> internal = new HashMap<>();
+        //internal.put("customerid", "CID5678");
+        internal.put("org_id", "543221");
+        String rhIdentity_json = "";
+        try {
+            rhIdentity_json = new ObjectMapper().writer().withRootName("identity").writeValueAsString(RHIdentity.builder()
+                    .accountNumber("12345")
+                    .internal(internal)
+                    .build());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        System.out.println("---------- RHIdentity : " + rhIdentity_json);
+        return Base64.getEncoder().encodeToString(rhIdentity_json.getBytes());
     }
 
     private Predicate isZippedFile() {

@@ -1,14 +1,18 @@
 package org.mycompany.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RHIdentity {
-    String accountNumber;
+    String account_number;
     Map<String,String> internal;
 
     

@@ -1,0 +1,12 @@
+{
+  "account": "12345",
+  "rh_account": "12345",
+  "principal": "543221",
+  "payload_id": "65b34434-cfc4-4738-8ec5-589c8dbf402e",
+  "hash": "65b34434-cfc4-4738-8ec5-589c8dbf402e",
+  "size": 5383,
+  "service": "testareno",
+  "category": "something",
+  "b64_identity": "eyJpZGVudGl0eSI6eyJhY2NvdW50X251bWJlciI6IjEyMzQ1IiwiaW50ZXJuYWwiOnsib3JnX2lkIjoiNTQzMjIxIiwiY3VzdG9tZXJpZCI6IkNJRDU2NzgifX19",
+  "url": "http://172.17.0.1:9000/insights-upload-perm-test/65b34434-cfc4-4738-8ec5-589c8dbf402e?AWSAccessKeyId=BQA2GEXO711FVBVXDWKM&Signature=kFX2JszpVpk9KfZfEthUMhFTFSw%3D&Expires=1558078567"
+}

@@ -74,19 +74,20 @@ public class MainRouteBuilder extends RouteBuilder {
                     multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
                     multipartEntityBuilder.setContentType(ContentType.MULTIPART_FORM_DATA);
                     String filename = exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
+                    exchange.getIn().setHeader(Exchange.FILE_NAME, filename);
+
                     String file = exchange.getIn().getBody(String.class);
                     multipartEntityBuilder.addPart("upload", new ByteArrayBody(file.getBytes(), ContentType.create("application/vnd.redhat.testareno.something+json"), filename));
-                    exchange.getOut().setBody(multipartEntityBuilder.build());
+                    exchange.getIn().setBody(multipartEntityBuilder.build());
                 })
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
-                .setHeader("x-rh-identity", constant(getRHIdentity()))
+                .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
                 .setHeader("x-rh-insights-request-id", constant(getRHInsightsRequestId()))
-                .recipientList(simple("http4://${sysenv.insightsuploadhost}/api/ingress/v1/upload"))
-        .log("answer ${body}")
-        .end();
-        
-        from("direct:kafka")
-                .recipientList(simple("kafka:${sysenv.kafkahost}?topic=platform.upload.testareno&autoOffsetReset=earliest&consumersCount=1&brokers=${sysenv.kafkahost}"))
+                .removeHeaders("Camel*")
+                .to("http4://{{env:insightsuploadhost}}/api/ingress/v1/upload?bridgeEndpoint=true")
+                .end();
+
+        from("kafka:{{env:kafkahost}}?topic=platform.upload.testareno&brokers={{env:kafkahost}}&autoCommitEnable=true")
                 .process(exchange -> {
                     String messageKey = "";
                     if (exchange.getIn() != null) {
@@ -97,27 +98,32 @@ public class MainRouteBuilder extends RouteBuilder {
                             messageKey = (String) message.getHeader(KafkaConstants.KEY);
                         Object data = message.getBody();
 
-                        System.out.println("topicName :: " + topicName + 
-                                " partitionId :: " + partitionId + 
-                                " messageKey :: " + messageKey + 
+                        System.out.println("topicName :: " + topicName +
+                                " partitionId :: " + partitionId +
+                                " messageKey :: " + messageKey +
                                 " message :: "+ data + "\n");
                     }
                 })
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .to("direct:download-from-S3");
-        
+
 
         from("direct:download-from-S3")
                 .setHeader("remote_url", simple("http4://${body.url.replaceAll('http://', '')}"))
+                .process( exchange -> {
+                    FilePersistedNotification notif_body = exchange.getIn().getBody(FilePersistedNotification.class);
+                    String identity_json = new String(Base64.getDecoder().decode(notif_body.getB64_identity()));
+                    RHIdentity rhIdentity = new ObjectMapper().reader().forType(RHIdentity.class).withRootName("identity").readValue(identity_json);
+                    exchange.getIn().setHeader("customerid", rhIdentity.getInternal().get("customerid"));
+                    exchange.getIn().setHeader("filename", rhIdentity.getInternal().get("filename"));
+                    exchange.getIn().setHeader("remote_url", exchange.getIn().getHeader("remote_url"));
+                })
                 .setBody(constant(""))
                 .recipientList(simple("${header.remote_url}"))
                 .convertBodyTo(String.class)
                 .log("Content : ${body}")
-                .process(exchange -> {
-                    
-                })
                 .to("direct:parse");
-        
+
         from("direct:parse")
                 .unmarshal().json(JsonLibrary.Jackson, CloudFormAnalysis.class)
                 .process(exchange -> {
@@ -131,18 +137,19 @@ public class MainRouteBuilder extends RouteBuilder {
                             .flatMap(e-> e.getDatastores().stream())
                             .mapToLong(t -> t.getTotalSpace())
                             .sum();
-                    exchange.getMessage().setHeader("numberofhosts",String.valueOf(numberofhosts));
-                    exchange.getMessage().setHeader("totaldiskspace", String.valueOf(totalspace));
+                    exchange.getIn().setHeader("numberofhosts",String.valueOf(numberofhosts));
+                    exchange.getIn().setHeader("totaldiskspace", String.valueOf(totalspace));
                 })
-                .log("Before second unmarshal : ${body}")
-                .process(exchange -> exchange.getMessage().setBody(InputDataModel.builder().customerId("CID9876") //exchange.getMessage().getHeader("customerid").toString())
-                                                                    .filename("file-name.json") //exchange.getMessage().getHeader("CamelFileName").toString())
-                                                                    .numberOfHosts(Long.parseLong(exchange.getMessage().getHeader("numberofhosts").toString()))
-                                                                    .totalDiskSpace(Long.parseLong(exchange.getMessage().getHeader("totaldiskspace").toString()))
-                                                                    .build()))
-                .log("Before third unmarshal : ${body}")
+                .process(exchange -> exchange.getIn().setBody(InputDataModel.builder()
+                        .customerId(exchange.getIn().getHeader("customerid").toString())
+                        .filename( exchange.getIn().getHeader("filename").toString())
+                        .numberOfHosts(Long.parseLong(exchange.getMessage().getHeader("numberofhosts").toString()))
+                        .totalDiskSpace(Long.parseLong(exchange.getMessage().getHeader("totaldiskspace").toString()))
+                        .build()))
                 .marshal().json()
-                .to("mock:amq_endpoint");
+                .log("Message to send to AMQ : ${body}")
+                .to("mock:amq")
+                .end();
     }
 
     private String getRHInsightsRequestId() {
@@ -150,15 +157,16 @@ public class MainRouteBuilder extends RouteBuilder {
         return UUID.randomUUID().toString();
     }
 
-    private String getRHIdentity() {
+    public String getRHIdentity(String customerid, String filename) {
         // '{"identity": {"account_number": "12345", "internal": {"org_id": "54321"}}}'
         Map<String,String> internal = new HashMap<>();
-        //internal.put("customerid", "CID5678");
+        internal.put("customerid", customerid);
+        internal.put("filename", filename);
         internal.put("org_id", "543221");
         String rhIdentity_json = "";
         try {
             rhIdentity_json = new ObjectMapper().writer().withRootName("identity").writeValueAsString(RHIdentity.builder()
-                    .accountNumber("12345")
+                    .account_number("12345")
                     .internal(internal)
                     .build());
         } catch (JsonProcessingException e) {

@@ -1,0 +1,225 @@
+{
+	"info": {
+		"_postman_id": "9e503e11-d93b-4539-92c0-cb5e096d856a",
+		"name": "ProjectXavier",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "xavier-health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://camel-ose-springboot-xml-myproject.127.0.0.1.nip.io/camel/health",
+					"protocol": "http",
+					"host": [
+						"camel-ose-springboot-xml-myproject",
+						"127",
+						"0",
+						"0",
+						"1",
+						"nip",
+						"io"
+					],
+					"path": [
+						"camel",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "xavier-upload  [one file]",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "redhat",
+							"type": "file",
+							"src": ""
+						}
+					]
+				},
+				"url": {
+					"raw": "{{host}}/upload",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"upload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "xavier-upload  [multi files]",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "redhat",
+							"type": "file",
+							"src": ""
+						},
+						{
+							"key": "tercer",
+							"type": "file",
+							"src": ""
+						},
+						{
+							"key": "otro",
+							"type": "file",
+							"src": ""
+						},
+						{
+							"key": "nombre",
+							"value": "pepito",
+							"type": "text"
+						},
+						{
+							"key": "ficherito",
+							"type": "file",
+							"src": ""
+						}
+					]
+				},
+				"url": {
+					"raw": "{{host}}/upload?customerid=CID1234&numberofhosts=99988",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"upload"
+					],
+					"query": [
+						{
+							"key": "customerid",
+							"value": "CID1234"
+						},
+						{
+							"key": "numberofhosts",
+							"value": "99988"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Upload directly to upload-service",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-rh-identity",
+						"value": "eyJpZGVudGl0eSI6IHsiYWNjb3VudF9udW1iZXIiOiAiMTIzNDUiLCAiaW50ZXJuYWwiOiB7Im9yZ19pZCI6ICI1NDMyMSJ9fX0=",
+						"type": "text"
+					},
+					{
+						"key": "x-rh-insights-request-id",
+						"value": "52df9f748eabcfea",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "upload",
+							"contentType": "application/vnd.redhat.testareno.something+json",
+							"type": "file",
+							"src": ""
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/api/ingress/v1/upload",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"ingress",
+						"v1",
+						"upload"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "12aa1ad1-d2fc-4846-9c47-fb8864e444f6",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "dfb6230c-d5f8-476e-92f2-4884d9adf2d2",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "940959ba-66da-49ee-b9b3-c56d59ece592",
+			"key": "host",
+			"value": "http://camel-ose-springboot-xml-myproject.127.0.0.1.nip.io/camel",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"id": "60f7902b-d63a-42bd-8b2c-ecabe1b33348",
+			"key": "host",
+			"value": "http://localhost:8090/camel",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"id": "40424d8b-958c-45a3-bdee-97bdc7966218",
+			"key": "host",
+			"value": "http://xavier-upload-myproject.127.0.0.1.nip.io/camel",
+			"type": "string"
+		}
+	]
+}

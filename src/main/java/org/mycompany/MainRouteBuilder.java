@@ -47,6 +47,8 @@ public class MainRouteBuilder extends RouteBuilder {
                 .get("/health")
                     .to("direct:health");
 
+        from("direct:health").transform().simple("${date:now:yyyy/MM/dd-HH:mm:ss.SSS} - health=OK");
+
         from("direct:upload")
                 .unmarshal(new CustomizedMultipartDataFormat())
                 .split()

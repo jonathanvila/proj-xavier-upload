@@ -31,7 +31,7 @@ import java.util.UUID;
 public class MainRouteBuilder extends RouteBuilder {
 
     public void configure() {
-        getContext().setTracing(true);
+        getContext().setTracing(false);
 
         restConfiguration()
                 .component("servlet")
@@ -42,7 +42,6 @@ public class MainRouteBuilder extends RouteBuilder {
                 .post("/upload/{customerid}")
                     .id("uploadAction")
                     .consumes("multipart/form-data")
-                    .produces("")
                     .to("direct:upload")
                 .get("/health")
                     .to("direct:health");
@@ -54,12 +53,10 @@ public class MainRouteBuilder extends RouteBuilder {
                 .split()
                     .attachments()
                     .process(processMultipart())
-                    .log("Processing PART ------> ${date:now:HH:mm:ss.SSS} [${header.CamelFileName}] // [${header.part_contenttype}] // [${header.part_name}]]")
                     .choice()
                         .when(isZippedFile())
                             .split(new ZipSplitter())
                             .streaming()
-                            .log(".....ZIP File processed : ${header.CamelFileName}")
                             .to("direct:store")
                         .endChoice()
                         .otherwise()
@@ -79,17 +76,17 @@ public class MainRouteBuilder extends RouteBuilder {
                     exchange.getIn().setHeader(Exchange.FILE_NAME, filename);
 
                     String file = exchange.getIn().getBody(String.class);
-                    multipartEntityBuilder.addPart("upload", new ByteArrayBody(file.getBytes(), ContentType.create("application/vnd.redhat.testareno.something+json"), filename));
+                    multipartEntityBuilder.addPart("upload", new ByteArrayBody(file.getBytes(), ContentType.create(getMimeTypeInsightsUploadService()), filename));
                     exchange.getIn().setBody(multipartEntityBuilder.build());
                 })
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
                 .setHeader("x-rh-insights-request-id", constant(getRHInsightsRequestId()))
                 .removeHeaders("Camel*")
-                .to("http4://{{env:insightsuploadhost}}/api/ingress/v1/upload?bridgeEndpoint=true")
+                .to("http4://{{env:ma-insightsuploadhost}}/api/ingress/v1/upload?bridgeEndpoint=true")
                 .end();
 
-        from("kafka:{{env:kafkahost}}?topic=platform.upload.testareno&brokers={{env:kafkahost}}&autoCommitEnable=true")
+        from("kafka:{{env:ma-kafkahost}}?topic=platform.upload.testareno&brokers={{env:ma-kafkahost}}&autoCommitEnable=true")
                 .process(exchange -> {
                     String messageKey = "";
                     if (exchange.getIn() != null) {
@@ -119,11 +116,12 @@ public class MainRouteBuilder extends RouteBuilder {
                     exchange.getIn().setHeader("customerid", rhIdentity.getInternal().get("customerid"));
                     exchange.getIn().setHeader("filename", rhIdentity.getInternal().get("filename"));
                     exchange.getIn().setHeader("remote_url", exchange.getIn().getHeader("remote_url"));
+                    exchange.getIn().setHeader("origin", exchange.getIn().getHeader("origin"));
                 })
+                .filter().method(MainRouteBuilder.class, "filterMessages")
                 .setBody(constant(""))
                 .recipientList(simple("${header.remote_url}"))
                 .convertBodyTo(String.class)
-                .log("Content : ${body}")
                 .to("direct:parse");
 
         from("direct:parse")
@@ -153,6 +151,15 @@ public class MainRouteBuilder extends RouteBuilder {
                 .to("mock:amq")
                 .end();
     }
+    
+    public boolean filterMessages(Exchange exchange) {
+        String originHeader = exchange.getIn().getHeader("origin", String.class); 
+        return (originHeader != null && originHeader.equalsIgnoreCase(System.getenv("ma-origin")));
+    }
+
+    private String getMimeTypeInsightsUploadService() {
+        return "application/" + System.getenv("ma-uploadmime");
+    }
 
     private String getRHInsightsRequestId() {
         // 52df9f748eabcfea
@@ -164,11 +171,11 @@ public class MainRouteBuilder extends RouteBuilder {
         Map<String,String> internal = new HashMap<>();
         internal.put("customerid", customerid);
         internal.put("filename", filename);
-        internal.put("org_id", "543221");
+        internal.put("origin", System.getenv("ma-origin"));
         String rhIdentity_json = "";
         try {
             rhIdentity_json = new ObjectMapper().writer().withRootName("identity").writeValueAsString(RHIdentity.builder()
-                    .account_number("12345")
+                    .account_number(System.getenv("ma-account-number"))
                     .internal(internal)
                     .build());
         } catch (JsonProcessingException e) {

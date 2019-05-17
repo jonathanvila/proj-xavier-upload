@@ -13,8 +13,14 @@ spec:
           env:
           - name: SPRING_APPLICATION_JSON
             value: '{"server":{"tomcat":{"max-threads":1}}}'
-          - name: kafkahost
+          - name: ma-kafkahost
             value: 172.17.0.1:29092
-          - name: insightsuploadhost
+          - name: ma-insightsuploadhost
             value: 172.17.0.1:8080
-            
+          - name: ma-uploadmime
+            value: vnd.redhat.testareno.projxavier+json
+          - name: ma-origin
+            value: proj-xavier
+          - name: ma-account-number
+            value: 12345
+          
